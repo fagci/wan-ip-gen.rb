@@ -3,6 +3,9 @@
 
 module IP
   # WAN range IP generator
+  #
+  # Example:
+  #   IP::RandomWAN.new.first(5)
   class RandomWAN
     include Enumerable
 
