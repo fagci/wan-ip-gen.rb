@@ -1,6 +1,8 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
+require 'socket'
+
 module IP
   # WAN range IP generator
   #
@@ -36,5 +38,24 @@ module IP
         block.call [intip].pack('N').unpack('CCCC').join('.')
       end
     end
+
+    def each_socket(port = 80, connect_timeout = 0.75)
+      each do |ip|
+        Socket.tcp(ip, port, connect_timeout: connect_timeout) do |s|
+          yield(s, ip)
+        end
+      rescue Errno::ETIMEDOUT, Errno::ECONNREFUSED, Errno::EHOSTUNREACH, Errno::ENETUNREACH
+        next
+      rescue Errno::ECONNRESET, Errno::ENOPROTOOPT
+        next
+      end
+    end
+  end
+end
+
+if $0 == __FILE__
+  IP::RandomWAN.new.each_socket do |s|
+    s << "GET / HTTP/1.1\r\nConnection: close\r\n\r\n"
+    puts s.recv(1024)
   end
 end
