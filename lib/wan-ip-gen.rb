@@ -11,10 +11,8 @@ module IP
   class RandomWAN
     include Enumerable
 
-    RANDOM_RANGE = (0x01000000...0xffffffff).freeze # exclude current network and local broadcast
+    RANDOM_RANGE = (0x01000000...0xdfffffff).freeze # exclude current network and local broadcast
     EXCLUDE_RANGES = [
-      (0xe0000000..0xefffffff), # 224.0.0.0 - 239.255.255.255
-      (0xf0000000..0xfffffffe), # 240.0.0.0 - 255.255.255.254
       (0xA000000..0xAFFFFFF),   # 10.0.0.0 - 10.255.255.255
       (0x7F000000..0x7FFFFFFF), # 127.0.0.0 - 127.255.255.255
       (0x64400000..0x647FFFFF), # 100.64.0.0 - 100.127.255.255

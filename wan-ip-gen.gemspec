@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'wan-ip-gen'
-  s.version     = '1.1.2'
+  s.version     = '1.2.0'
   s.summary     = 'WAN range random IP generator'
   s.description = 'WAN range random IP generator'
   s.authors     = ['Mikhail Yudin']
