@@ -11,28 +11,37 @@ module IP
   class RandomWAN
     include Enumerable
 
-    RANDOM_RANGE = (0x01000000...0xdfffffff).freeze # exclude current network and local broadcast
-    EXCLUDE_RANGES = [
-      (0xA000000..0xAFFFFFF),   # 10.0.0.0 - 10.255.255.255
-      (0x7F000000..0x7FFFFFFF), # 127.0.0.0 - 127.255.255.255
-      (0x64400000..0x647FFFFF), # 100.64.0.0 - 100.127.255.255
-      (0xAC100000..0xAC1FFFFF), # 172.16.0.0 - 172.31.255.255
-      (0xC6120000..0xC613FFFF), # 198.18.0.0 - 198.19.255.255
-      (0xA9FE0000..0xA9FEFFFF), # 169.254.0.0 - 169.254.255.255
-      (0xC0A80000..0xC0A8FFFF), # 192.168.0.0 - 192.168.255.255
-      (0xC0000000..0xC00000FF), # 192.0.0.0 - 192.0.0.255
-      (0xC0000200..0xC00002FF), # 192.0.2.0 - 192.0.2.255
-      (0xc0586300..0xc05863ff), # 192.88.99.0 - 192.88.99.255
-      (0xC6336400..0xC63364FF), # 198.51.100.0 - 198.51.100.255
-      (0xCB007100..0xCB0071FF), # 203.0.113.0 - 203.0.113.255
-      (0xe9fc0000..0xe9fc00ff)  # 233.252.0.0 - 233.252.0.255
+    RANGES = [
+      (0xb000000..0x643fffff),
+      (0x80000000..0xa9fdffff),
+      (0x64800000..0x7effffff),
+      (0xcb007200..0xdfffffff),
+      (0xac200000..0xbfffffff),
+      (0xc0a90000..0xc611ffff),
+      (0xc6336500..0xcb0070ff),
+      (0xa9ff0000..0xac0fffff),
+      (0xc0000300..0xc05862ff),
+      (0xc0586400..0xc0a7ffff),
+      (0xc6140000..0xc63363ff),
+      (0xc0000100..0xc00001ff)
     ].freeze
+
+    SIZES = RANGES.map(&:size)
+    TOTAL = SIZES.sum.to_f
+    PROBABILITIES = SIZES.map { |w| w / TOTAL }
+    RANGES_P = RANGES.zip(PROBABILITIES).freeze
+
+    def intip
+      p = rand
+      RANGES_P.each do |range, range_p|
+        return rand range if p < range_p
+
+        p -= range_p
+      end
+    end
 
     def each(&block)
       loop do
-        intip = rand(RANDOM_RANGE)
-        next if EXCLUDE_RANGES.any? { |r| r.cover? intip }
-
         block.call [intip].pack('N').unpack('CCCC').join('.')
       end
     end
@@ -52,8 +61,7 @@ module IP
 end
 
 if $0 == __FILE__
-  IP::RandomWAN.new.each_socket do |s|
-    s << "GET / HTTP/1.1\r\nConnection: close\r\n\r\n"
-    puts s.recv(1024)
+  IP::RandomWAN.new.each do |ip|
+    puts ip
   end
 end
