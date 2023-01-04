@@ -28,16 +28,12 @@ module IP
 
     SIZES = RANGES.map(&:size)
     TOTAL = SIZES.sum.to_f
-    PROBABILITIES = SIZES.map { |w| w / TOTAL }
-    RANGES_P = RANGES.zip(PROBABILITIES).freeze
+    PROBABILITIES = SIZES.map { |s| s / TOTAL }
 
     def intip
       p = rand
-      RANGES_P.each do |range, range_p|
-        return rand range if p < range_p
-
-        p -= range_p
-      end
+      i = PROBABILITIES.index { |rp| p < rp || !(p -= rp) }
+      rand RANGES[i]
     end
 
     def each(&block)
